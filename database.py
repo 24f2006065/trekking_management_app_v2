@@ -4,11 +4,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash
 
-from models import Base, User
+from app.models import Base, User
 
 DATABASE_PATH = Path(__file__).parent / "trekking.db"
 DATABASE_URL = "sqlite:///" + DATABASE_PATH.as_posix()
-ADMIN_PASSWORD = "admin123"
+ADMIN_PASSWORD = "pass123"
 engine = create_engine(DATABASE_URL)
 
 
@@ -23,6 +23,9 @@ def create_admin():
                 role="Admin",
             )
             session.add(admin)
+            session.commit()
+        elif not admin.password_hash:
+            admin.password_hash = generate_password_hash(ADMIN_PASSWORD)
             session.commit()
 
 
