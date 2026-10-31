@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, get_flashed_messages, redirect, render_template, request, session, url_for
+from flask import Blueprint, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy.orm import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -9,75 +9,72 @@ from .models import User
 auth = Blueprint("auth", __name__)
 
 
-@auth.route("/login", methods=["GET", "POST"])
+@auth.route("/login")
 def login():
-    if request.method == "POST":
-        email = request.form["email"].strip().lower()
-        password = request.form["password"]
-
-        with Session(engine) as database_session:
-            user = database_session.query(User).filter_by(email=email).first()
-
-            if user and check_password_hash(user.password_hash, password):
-                if user.status != "Active":
-                    flash("This account is inactive.")
-                    return redirect(url_for("auth.login"))
-
-                if user.role == "Trek Staff":
-                    if user.staff_profile is None or user.staff_profile.status != "Active":
-                        flash("This staff account is inactive.")
-                        return redirect(url_for("auth.login"))
-
-                if user.role in ["Admin", "Trek Staff", "Trekker"]:
-                    session.clear()
-                    session["user_id"] = user.user_id
-                    session["user_name"] = user.name
-                    session["role"] = user.role
-
-                    if user.role == "Admin":
-                        return redirect(url_for("main.admin_dashboard"))
-                    elif user.role == "Trek Staff":
-                        return redirect(url_for("main.staff_dashboard"))
-                    else:
-                        return redirect(url_for("main.trekker_dashboard"))
-
-        flash("Invalid email or password.")
-        return redirect(url_for("auth.login"))
-
-    messages = get_flashed_messages()
-    message = messages[0] if messages else ""
-    return render_template("login.html", message=message)
+    return render_template("login.html")
 
 
-@auth.route("/register", methods=["GET", "POST"])
+@auth.route("/register")
 def register():
-    if request.method == "POST":
-        name = request.form["name"].strip()
-        email = request.form["email"].strip().lower()
-        password = request.form["password"]
+    return render_template("register.html")
 
-        with Session(engine) as database_session:
-            existing_user = database_session.query(User).filter_by(email=email).first()
 
-            if existing_user:
-                flash("An account with this email already exists.")
-                return redirect(url_for("auth.register"))
+@auth.route("/api/login", methods=["POST"])
+def login_user():
+    data = request.get_json()
+    email = data["email"].strip().lower()
+    password = data["password"]
 
-            user = User(
-                name=name,
-                email=email,
-                password_hash=generate_password_hash(password),
-                role="Trekker",
-            )
-            database_session.add(user)
-            database_session.commit()
+    with Session(engine) as database_session:
+        user = database_session.query(User).filter_by(email=email).first()
 
-        flash("Registration complete. Please log in.")
-        return redirect(url_for("auth.login"))
+        if user and check_password_hash(user.password_hash, password):
+            if user.status != "Active":
+                return jsonify({"message": "This account is inactive."}), 403
 
-    messages = get_flashed_messages()
-    message = messages[0] if messages else ""
-    return render_template("register.html", message=message)
+            if user.role == "Trek Staff":
+                if user.staff_profile is None or user.staff_profile.status != "Active":
+                    return jsonify({"message": "This staff account is inactive."}), 403
+
+            if user.role in ["Admin", "Trek Staff", "Trekker"]:
+                session.clear()
+                session["user_id"] = user.user_id
+                session["user_name"] = user.name
+                session["role"] = user.role
+
+                if user.role == "Admin":
+                    next_page = url_for("main.admin_dashboard")
+                elif user.role == "Trek Staff":
+                    next_page = url_for("main.staff_dashboard")
+                else:
+                    next_page = url_for("main.trekker_dashboard")
+                return jsonify({"redirect": next_page})
+
+    return jsonify({"message": "Invalid email or password."}), 401
+
+
+@auth.route("/api/register", methods=["POST"])
+def register_user():
+    data = request.get_json()
+    name = data["name"].strip()
+    email = data["email"].strip().lower()
+    password = data["password"]
+
+    with Session(engine) as database_session:
+        existing_user = database_session.query(User).filter_by(email=email).first()
+        if existing_user:
+            return jsonify({"message": "An account with this email already exists."}), 400
+
+        user = User(
+            name=name,
+            email=email,
+            password_hash=generate_password_hash(password),
+            role="Trekker",
+        )
+        database_session.add(user)
+        database_session.commit()
+
+    return jsonify({"message": "Registration complete. Please log in."})
 
 
 @auth.route("/logout")

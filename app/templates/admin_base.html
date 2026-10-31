@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trekking Management Application</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="/static/style.css" rel="stylesheet" />
+  </head>
+  <body class="bg-light">
+    <main id="admin-app" class="container py-4"></main>
+    <template id="admin-navigation-template">
+      <div>
+        <section class="card p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0" v-text="title"></h1>
+            <a href="/logout" class="btn btn-secondary">Log out</a>
+          </div>
+        </section>
+        <nav class="d-flex flex-wrap gap-2 mb-4">
+          <a class="btn btn-outline-primary" href="/admin">Dashboard</a>
+          <a class="btn btn-outline-primary" href="/admin/add-trek">Add Trek</a>
+          <a class="btn btn-outline-primary" href="/admin/treks"
+            >Manage Treks</a
+          >
+          <a class="btn btn-outline-primary" href="/admin/add-staff"
+            >Add Staff</a
+          >
+          <a class="btn btn-outline-primary" href="/admin/staff"
+            >Manage Staff</a
+          >
+          <a class="btn btn-outline-primary" href="/admin/users"
+            >Manage Users</a
+          >
+          <a class="btn btn-outline-primary" href="/admin/bookings"
+            >Booking History</a
+          >
+          <a class="btn btn-outline-primary" href="/admin/statistics"
+            >Trek Statistics</a
+          >
+        </nav>
+      </div>
+    </template>
+    {% block page_template %}{% endblock %}
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="/static/admin_common.js"></script>
+    {% block app_script %}{% endblock %}
+  </body>
+</html>

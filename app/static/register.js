@@ -1,9 +1,28 @@
-const registerPage = document.getElementById("register-app");
-
-Vue.createApp({
-    data() {
-        return {
-            message: registerPage.dataset.message,
-        };
+const registerApp = Vue.createApp({
+  template: "#register-template",
+  data() {
+    return { name: "", email: "", password: "", message: "" };
+  },
+  methods: {
+    async register() {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: this.name,
+          email: this.email,
+          password: this.password,
+        }),
+      });
+      const result = await response.json();
+      this.message = result.message;
+      if (response.ok) {
+        this.name = "";
+        this.email = "";
+        this.password = "";
+      }
     },
-}).mount("#register-app");
+  },
+});
+
+registerApp.mount("#register-app");

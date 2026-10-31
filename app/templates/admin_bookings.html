@@ -1,0 +1,38 @@
+{% extends "admin_base.html" %} {% block page_template %}
+<template id="admin-page-template">
+  <div>
+    <admin-navigation title="Bookings and Trekking History"></admin-navigation>
+    <section class="card p-4">
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Trekker</th>
+              <th>Trek</th>
+              <th>Booking date</th>
+              <th>Status</th>
+              <th>Payment</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="booking in bookings" :key="booking.booking_id">
+              <td>[[ booking.booking_id ]]</td>
+              <td>[[ booking.user_name ]]</td>
+              <td>[[ booking.trek_name ]]</td>
+              <td>[[ booking.booking_date ]]</td>
+              <td>[[ booking.status ]]</td>
+              <td>[[ booking.payment_status ]]</td>
+            </tr>
+            <tr v-if="bookings.length === 0">
+              <td colspan="6">No bookings found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</template>
+{% endblock %} {% block app_script %}
+<script src="/static/admin_bookings.js"></script>
+{% endblock %}

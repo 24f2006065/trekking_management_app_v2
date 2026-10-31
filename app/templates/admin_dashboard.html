@@ -1,0 +1,32 @@
+{% extends "admin_base.html" %} {% block page_template %}
+<template id="admin-page-template">
+  <div>
+    <admin-navigation title="Admin Dashboard"></admin-navigation>
+    <section class="row g-3">
+      <div class="col-6 col-lg-3">
+        <div class="card p-3">
+          <strong>Treks</strong><span>[[ counts.treks ]]</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card p-3">
+          <strong>Trekkers</strong><span>[[ counts.users ]]</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card p-3">
+          <strong>Staff</strong><span>[[ counts.staff ]]</span>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="card p-3">
+          <strong>Bookings</strong><span>[[ counts.bookings ]]</span>
+        </div>
+      </div>
+    </section>
+    <p v-if="message" class="alert alert-info mt-3" v-text="message"></p>
+  </div>
+</template>
+{% endblock %} {% block app_script %}
+<script src="/static/admin_dashboard.js"></script>
+{% endblock %}

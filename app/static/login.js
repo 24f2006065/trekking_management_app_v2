@@ -1,9 +1,23 @@
-const loginPage = document.getElementById("login-app");
-
-Vue.createApp({
-    data() {
-        return {
-            message: loginPage.dataset.message,
-        };
+const loginApp = Vue.createApp({
+  template: "#login-template",
+  data() {
+    return { email: "", password: "", message: "" };
+  },
+  methods: {
+    async login() {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: this.email, password: this.password }),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        window.location.href = result.redirect;
+      } else {
+        this.message = result.message;
+      }
     },
-}).mount("#login-app");
+  },
+});
+
+loginApp.mount("#login-app");

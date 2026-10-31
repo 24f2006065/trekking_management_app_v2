@@ -1,0 +1,77 @@
+{% extends "admin_base.html" %} {% block page_template %}
+<template id="admin-page-template">
+  <div>
+    <admin-navigation title="Add a Trek"></admin-navigation>
+    <section class="card p-4">
+      <form @submit.prevent="addTrek" class="row g-2">
+        <div class="col-md-6">
+          <input
+            class="form-control"
+            v-model="trek.trek_name"
+            placeholder="Trek name"
+            required
+          />
+        </div>
+        <div class="col-md-6">
+          <input
+            class="form-control"
+            v-model="trek.location"
+            placeholder="Location"
+            required
+          />
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" v-model="trek.difficulty" required>
+            <option value="">Difficulty</option>
+            <option>Easy</option>
+            <option>Moderate</option>
+            <option>Hard</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            type="number"
+            min="1"
+            v-model="trek.duration_days"
+            placeholder="Duration in days"
+            required
+          />
+        </div>
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            type="number"
+            min="0"
+            v-model="trek.available_slots"
+            placeholder="Available slots"
+            required
+          />
+        </div>
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            type="date"
+            v-model="trek.start_date"
+            required
+          />
+        </div>
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            type="date"
+            v-model="trek.end_date"
+            required
+          />
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary">Add Trek</button>
+        </div>
+      </form>
+      <p v-if="message" class="alert alert-info mt-3" v-text="message"></p>
+    </section>
+  </div>
+</template>
+{% endblock %} {% block app_script %}
+<script src="/static/admin_add-trek.js"></script>
+{% endblock %}

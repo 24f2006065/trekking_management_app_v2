@@ -1,0 +1,50 @@
+{% extends "admin_base.html" %} {% block page_template %}
+<template id="admin-page-template">
+  <div>
+    <admin-navigation title="Add Trek Staff"></admin-navigation>
+    <section class="card p-4">
+      <form @submit.prevent="addStaff" class="row g-2">
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            v-model="staff.name"
+            placeholder="Name"
+            required
+          />
+        </div>
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            type="email"
+            v-model="staff.email"
+            placeholder="Email"
+            required
+          />
+        </div>
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            type="password"
+            v-model="staff.password"
+            placeholder="Password"
+            required
+          />
+        </div>
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            v-model="staff.contact_details"
+            placeholder="Contact details"
+          />
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary">Add Staff</button>
+        </div>
+      </form>
+      <p v-if="message" class="alert alert-info mt-3" v-text="message"></p>
+    </section>
+  </div>
+</template>
+{% endblock %} {% block app_script %}
+<script src="/static/admin_add-staff.js"></script>
+{% endblock %}

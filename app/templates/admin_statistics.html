@@ -1,0 +1,32 @@
+{% extends "admin_base.html" %} {% block page_template %}
+<template id="admin-page-template">
+  <div>
+    <admin-navigation title="Trek Statistics"></admin-navigation>
+    <section class="card p-4">
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Trek</th>
+              <th>Status</th>
+              <th>Bookings</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="trek in treks" :key="trek.trek_name">
+              <td>[[ trek.trek_name ]]</td>
+              <td>[[ trek.status ]]</td>
+              <td>[[ trek.booking_count ]]</td>
+            </tr>
+            <tr v-if="treks.length === 0">
+              <td colspan="3">No trek statistics available.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</template>
+{% endblock %} {% block app_script %}
+<script src="/static/admin_statistics.js"></script>
+{% endblock %}
