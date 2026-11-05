@@ -255,6 +255,71 @@ def staff_dashboard():
     return render_template("staff_dashboard.html")
 
 
+@main.route("/api/staff/treks")
+def staff_treks():
+    if not session.get("user_id"):
+        return jsonify({"message": "Please log in."}), 401
+    if session.get("role") != "Trek Staff":
+        return jsonify({"message": "Unauthorized."}), 403
+
+    with Session(engine) as database_session:
+        staff = database_session.query(StaffProfile).filter_by(user_id=session["user_id"]).first()
+        if staff is None:
+            return jsonify({"message": "Staff profile not found."}), 404
+
+        treks = database_session.query(Trek).filter_by(assigned_staff_id=staff.staff_id).order_by(Trek.trek_id).all()
+        trek_list = []
+        for trek in treks:
+            bookings = database_session.query(Booking).options(
+                joinedload(Booking.user)
+            ).filter_by(trek_id=trek.trek_id).all()
+            participants = [{
+                "name": booking.user.name,
+                "email": booking.user.email,
+                "status": booking.status,
+            } for booking in bookings if booking.status == "Booked"]
+            trek_list.append({
+                "trek_id": trek.trek_id,
+                "trek_name": trek.trek_name,
+                "location": trek.location,
+                "difficulty": trek.difficulty,
+                "duration_days": trek.duration_days,
+                "available_slots": trek.available_slots,
+                "status": trek.status,
+                "start_date": trek.start_date.isoformat() if trek.start_date else "",
+                "end_date": trek.end_date.isoformat() if trek.end_date else "",
+                "registered_count": len(participants),
+                "participants": participants,
+            })
+        return jsonify({"treks": trek_list})
+
+
+@main.route("/api/staff/treks/<int:trek_id>", methods=["POST"])
+def update_staff_trek(trek_id):
+    if not session.get("user_id"):
+        return jsonify({"message": "Please log in."}), 401
+    if session.get("role") != "Trek Staff":
+        return jsonify({"message": "Unauthorized."}), 403
+
+    data = request.get_json()
+    available_slots = int(data["available_slots"])
+    if available_slots < 0:
+        return jsonify({"message": "Available slots cannot be negative."}), 400
+    if data["status"] not in ["Open", "Closed", "Started", "Ongoing", "Completed"]:
+        return jsonify({"message": "Invalid trek status."}), 400
+
+    with Session(engine) as database_session:
+        staff = database_session.query(StaffProfile).filter_by(user_id=session["user_id"]).first()
+        trek = database_session.get(Trek, trek_id)
+        if staff is None or trek is None or trek.assigned_staff_id != staff.staff_id:
+            return jsonify({"message": "This trek is not assigned to you."}), 403
+
+        trek.available_slots = available_slots
+        trek.status = data["status"]
+        database_session.commit()
+        return jsonify({"message": "Trek updated."})
+
+
 @main.route("/trekker")
 def trekker_dashboard():
     if not session.get("user_id"):

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Trekking Management Application</title>
+    <title>Trek Staff Dashboard</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -11,13 +11,92 @@
     <link href="/static/style.css" rel="stylesheet" />
   </head>
   <body class="bg-light">
-    <main id="staff-app" class="container py-5 dashboard-card"></main>
+    <main id="staff-app" class="container py-4 dashboard-card"></main>
     <template id="staff-template">
-      <section class="card p-4">
-        <h1 class="h3">Trek Staff Dashboard</h1>
-        <p>Welcome, <span v-text="userName"></span>.</p>
-        <a href="/logout" class="btn btn-secondary">Log out</a>
-      </section>
+      <div>
+        <section
+          class="card p-4 mb-4 d-flex flex-row justify-content-between align-items-center"
+        >
+          <div>
+            <h1 class="h3">Trek Staff Dashboard</h1>
+            <p class="mb-0">Welcome, <span v-text="userName"></span>.</p>
+            <p class="mb-0">
+              Assigned treks: <span v-text="treks.length"></span> · Registered
+              trekkers: <span v-text="totalParticipants"></span>
+            </p>
+          </div>
+          <a href="/logout" class="btn btn-secondary">Log out</a>
+        </section>
+        <p v-if="message" class="alert alert-info" v-text="message"></p>
+        <section
+          v-for="trek in treks"
+          :key="trek.trek_id"
+          class="card p-4 mb-4"
+        >
+          <h2 class="h5" v-text="trek.trek_name"></h2>
+          <p>
+            <span v-text="trek.location"></span> ·
+            <span v-text="trek.difficulty"></span> ·
+            <span v-text="trek.duration_days"></span> days
+          </p>
+          <p>
+            Registered trekkers: <span v-text="trek.registered_count"></span>
+          </p>
+          <form @submit.prevent="saveTrek(trek)" class="row g-2 mb-4">
+            <div class="col-md-3">
+              <label class="form-label">Available slots</label
+              ><input
+                class="form-control"
+                type="number"
+                min="0"
+                v-model="trek.available_slots"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Trek status</label
+              ><select class="form-select" v-model="trek.status">
+                <option>Open</option>
+                <option>Closed</option>
+                <option>Started</option>
+                <option>Ongoing</option>
+                <option>Completed</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <button class="btn btn-primary">Save Trek</button>
+            </div>
+          </form>
+          <h3 class="h6">Registered Trekkers</h3>
+          <div class="table-responsive">
+            <table class="table table-striped mb-0">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Booking status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="participant in trek.participants"
+                  :key="participant.email"
+                >
+                  <td v-text="participant.name"></td>
+                  <td v-text="participant.email"></td>
+                  <td v-text="participant.status"></td>
+                </tr>
+                <tr v-if="trek.participants.length === 0">
+                  <td colspan="3">No trekkers registered.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section v-if="treks.length === 0" class="card p-4">
+          <p class="mb-0">No treks have been assigned to you.</p>
+        </section>
+      </div>
     </template>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="/static/staff_dashboard.js"></script>
