@@ -320,10 +320,150 @@ def update_staff_trek(trek_id):
         return jsonify({"message": "Trek updated."})
 
 
-@main.route("/trekker")
-def trekker_dashboard():
+@main.route("/trekker", defaults={"page": "dashboard"})
+@main.route("/trekker/<page>")
+def trekker_dashboard(page):
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
     if session.get("role") != "Trekker":
         return "Unauthorized", 403
-    return render_template("trekker_dashboard.html")
+
+    page_templates = {
+        "dashboard": "trekker_dashboard.html",
+        "profile": "trekker_profile.html",
+        "treks": "trekker_treks.html",
+        "bookings": "trekker_bookings.html",
+    }
+    return render_template(page_templates.get(page, "trekker_dashboard.html"))
+
+
+@main.route("/api/trekker/dashboard")
+def trekker_dashboard_data():
+    if not session.get("user_id") or session.get("role") != "Trekker":
+        return jsonify({"message": "Unauthorized."}), 403
+
+    with Session(engine) as database_session:
+        user = database_session.get(User, session["user_id"])
+        bookings = database_session.query(Booking).options(
+            joinedload(Booking.trek)
+        ).filter_by(user_id=user.user_id).order_by(Booking.booking_date.desc()).all()
+        return jsonify({
+            "name": user.name,
+            "available_treks": database_session.query(Trek).filter(
+                Trek.status == "Open", Trek.available_slots > 0
+            ).count(),
+            "bookings": [{
+                "booking_id": booking.booking_id,
+                "trek_name": booking.trek.trek_name,
+                "booking_status": booking.status,
+                "trek_status": booking.trek.status,
+            } for booking in bookings],
+        })
+
+
+@main.route("/api/trekker/profile", methods=["GET", "POST"])
+def trekker_profile():
+    if not session.get("user_id") or session.get("role") != "Trekker":
+        return jsonify({"message": "Unauthorized."}), 403
+
+    with Session(engine) as database_session:
+        user = database_session.get(User, session["user_id"])
+        if request.method == "GET":
+            return jsonify({"name": user.name, "email": user.email})
+
+        data = request.get_json()
+        email = data["email"].strip().lower()
+        existing_user = database_session.query(User).filter(
+            User.email == email, User.user_id != user.user_id
+        ).first()
+        if existing_user:
+            return jsonify({"message": "An account with this email already exists."}), 400
+
+        user.name = data["name"].strip()
+        user.email = email
+        database_session.commit()
+        session["user_name"] = user.name
+        return jsonify({"message": "Profile updated."})
+
+
+@main.route("/api/trekker/treks")
+def trekker_treks():
+    if not session.get("user_id") or session.get("role") != "Trekker":
+        return jsonify({"message": "Unauthorized."}), 403
+
+    search = request.args.get("search", "").strip()
+    difficulty = request.args.get("difficulty", "").strip()
+    location = request.args.get("location", "").strip()
+    duration = request.args.get("duration", "").strip()
+
+    with Session(engine) as database_session:
+        treks_query = database_session.query(Trek).filter_by(status="Open")
+        if search:
+            treks_query = treks_query.filter(Trek.trek_name.ilike(f"%{search}%"))
+        if difficulty:
+            treks_query = treks_query.filter_by(difficulty=difficulty)
+        if location:
+            treks_query = treks_query.filter(Trek.location.ilike(f"%{location}%"))
+        if duration.isdigit():
+            treks_query = treks_query.filter_by(duration_days=int(duration))
+
+        treks = treks_query.order_by(Trek.trek_id).all()
+        return jsonify({"treks": [{
+            "trek_id": trek.trek_id,
+            "trek_name": trek.trek_name,
+            "location": trek.location,
+            "difficulty": trek.difficulty,
+            "duration_days": trek.duration_days,
+            "available_slots": trek.available_slots,
+            "status": trek.status,
+            "start_date": trek.start_date.isoformat() if trek.start_date else "",
+            "end_date": trek.end_date.isoformat() if trek.end_date else "",
+        } for trek in treks]})
+
+
+@main.route("/api/trekker/bookings")
+def trekker_bookings():
+    if not session.get("user_id") or session.get("role") != "Trekker":
+        return jsonify({"message": "Unauthorized."}), 403
+
+    with Session(engine) as database_session:
+        bookings = database_session.query(Booking).options(
+            joinedload(Booking.trek)
+        ).filter_by(user_id=session["user_id"]).order_by(Booking.booking_date.desc()).all()
+        return jsonify({"bookings": [{
+            "booking_id": booking.booking_id,
+            "trek_name": booking.trek.trek_name,
+            "location": booking.trek.location,
+            "start_date": booking.trek.start_date.isoformat() if booking.trek.start_date else "",
+            "end_date": booking.trek.end_date.isoformat() if booking.trek.end_date else "",
+            "booking_status": booking.status,
+            "trek_status": booking.trek.status,
+            "booking_date": booking.booking_date.isoformat(),
+        } for booking in bookings]})
+
+
+@main.route("/api/trekker/bookings", methods=["POST"])
+def create_trekker_booking():
+    if not session.get("user_id") or session.get("role") != "Trekker":
+        return jsonify({"message": "Unauthorized."}), 403
+
+    data = request.get_json()
+    with Session(engine) as database_session:
+        trek = database_session.get(Trek, int(data["trek_id"]))
+        if trek is None or trek.status != "Open":
+            return jsonify({"message": "This trek is closed or unavailable."}), 400
+
+        existing_booking = database_session.query(Booking).filter_by(
+            user_id=session["user_id"], trek_id=trek.trek_id
+        ).first()
+        if existing_booking:
+            return jsonify({"message": "You have already booked this trek."}), 400
+
+        if trek.available_slots <= 0:
+            return jsonify({"message": "No slots are available for this trek."}), 400
+
+        booking = Booking(user_id=session["user_id"], trek_id=trek.trek_id)
+        trek.available_slots -= 1
+        database_session.add(booking)
+        database_session.commit()
+        return jsonify({"message": "Trek booked successfully."})

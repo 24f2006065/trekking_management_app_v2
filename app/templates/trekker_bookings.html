@@ -1,0 +1,43 @@
+{% extends "trekker_base.html" %} {% block page_template %}
+<template id="trekker-page-template">
+  <div>
+    <trekker-navigation
+      title="My Bookings and Trekking History"
+    ></trekker-navigation>
+    <section class="card p-4">
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Trek</th>
+              <th>Location</th>
+              <th>Trek dates</th>
+              <th>Booking date</th>
+              <th>Booking status</th>
+              <th>Trek status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="booking in bookings" :key="booking.booking_id">
+              <td v-text="booking.trek_name"></td>
+              <td v-text="booking.location"></td>
+              <td>
+                <span v-text="booking.start_date"></span> to
+                <span v-text="booking.end_date"></span>
+              </td>
+              <td v-text="booking.booking_date"></td>
+              <td v-text="booking.booking_status"></td>
+              <td v-text="booking.trek_status"></td>
+            </tr>
+            <tr v-if="bookings.length === 0">
+              <td colspan="6">You have no bookings yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</template>
+{% endblock %} {% block app_script %}
+<script src="/static/trekker_bookings.js"></script>
+{% endblock %}

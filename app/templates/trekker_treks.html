@@ -1,0 +1,77 @@
+{% extends "trekker_base.html" %} {% block page_template %}
+<template id="trekker-page-template">
+  <div>
+    <trekker-navigation title="Browse Open Treks"></trekker-navigation>
+    <section class="card p-4 mb-4">
+      <form @submit.prevent="loadTreks" class="row g-2">
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            v-model="filters.search"
+            placeholder="Trek name"
+          />
+        </div>
+        <div class="col-md-3">
+          <input
+            class="form-control"
+            v-model="filters.location"
+            placeholder="Location"
+          />
+        </div>
+        <div class="col-md-2">
+          <select class="form-select" v-model="filters.difficulty">
+            <option value="">Any difficulty</option>
+            <option>Easy</option>
+            <option>Moderate</option>
+            <option>Hard</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <input
+            class="form-control"
+            type="number"
+            min="1"
+            step="1"
+            v-model="filters.duration"
+            placeholder="Duration (days)"
+          />
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-primary w-100">Search</button>
+        </div>
+      </form>
+      <p v-if="message" class="alert alert-info mt-3 mb-0" v-text="message"></p>
+    </section>
+    <section class="row g-3">
+      <div v-for="trek in treks" :key="trek.trek_id" class="col-12">
+        <div class="card p-4">
+          <h2 class="h5" v-text="trek.trek_name"></h2>
+          <p class="mb-1">Location: <span v-text="trek.location"></span></p>
+          <p class="mb-1">Difficulty: <span v-text="trek.difficulty"></span></p>
+          <p class="mb-1">
+            Duration: <span v-text="trek.duration_days"></span> days
+          </p>
+          <p class="mb-1">
+            Dates: <span v-text="trek.start_date"></span> to
+            <span v-text="trek.end_date"></span>
+          </p>
+          <p>Available slots: <span v-text="trek.available_slots"></span></p>
+          <button
+            class="btn btn-primary align-self-start"
+            :disabled="trek.available_slots <= 0"
+            @click="bookTrek(trek)"
+          >
+            <span v-if="trek.available_slots > 0">Book Trek</span
+            ><span v-else>Full</span>
+          </button>
+        </div>
+      </div>
+      <div v-if="treks.length === 0" class="col-12">
+        <div class="card p-4">No open treks found.</div>
+      </div>
+    </section>
+  </div>
+</template>
+{% endblock %} {% block app_script %}
+<script src="/static/trekker_treks.js"></script>
+{% endblock %}

@@ -1,11 +1,12 @@
-Vue.createApp({
-  template: "#trekker-template",
+window.createTrekkerApp({
   data() {
-    return { userName: "" };
+    return { name: "", availableTreks: 0, bookings: [] };
   },
   async mounted() {
-    const response = await fetch("/api/current-user");
-    const result = await response.json();
-    this.userName = result.name;
+    const response = await fetch("/api/trekker/dashboard");
+    const data = await response.json();
+    this.name = data.name;
+    this.availableTreks = data.available_treks;
+    this.bookings = data.bookings;
   },
-}).mount("#trekker-app");
+});

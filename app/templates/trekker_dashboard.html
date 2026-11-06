@@ -1,25 +1,49 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Trekking Management Application</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link href="/static/style.css" rel="stylesheet" />
-  </head>
-  <body class="bg-light">
-    <main id="trekker-app" class="container py-5 dashboard-card"></main>
-    <template id="trekker-template">
-      <section class="card p-4">
-        <h1 class="h3">Trekker Dashboard</h1>
-        <p>Welcome, <span v-text="userName"></span>.</p>
-        <a href="/logout" class="btn btn-secondary">Log out</a>
-      </section>
-    </template>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="/static/trekker_dashboard.js"></script>
-  </body>
-</html>
+{% extends "trekker_base.html" %} {% block page_template %}
+<template id="trekker-page-template">
+  <div>
+    <trekker-navigation title="Trekker Dashboard"></trekker-navigation>
+    <section class="card p-4 mb-4">
+      <p>Welcome, <span v-text="name"></span>.</p>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card p-3">
+            <strong>Available Open Treks</strong
+            ><span v-text="availableTreks"></span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card p-3">
+            <strong>My Bookings</strong><span v-text="bookings.length"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="card p-4">
+      <h2 class="h5">Booked Treks and Status</h2>
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Trek</th>
+              <th>Booking status</th>
+              <th>Trek status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="booking in bookings" :key="booking.booking_id">
+              <td v-text="booking.trek_name"></td>
+              <td v-text="booking.booking_status"></td>
+              <td v-text="booking.trek_status"></td>
+            </tr>
+            <tr v-if="bookings.length === 0">
+              <td colspan="3">You have no bookings yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</template>
+{% endblock %} {% block app_script %}
+<script src="/static/trekker_dashboard.js"></script>
+{% endblock %}

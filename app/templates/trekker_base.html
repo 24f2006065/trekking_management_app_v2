@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trekking Management Application</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="/static/style.css" rel="stylesheet" />
+  </head>
+  <body class="bg-light">
+    <main id="trekker-app" class="container py-4"></main>
+    <template id="trekker-navigation-template">
+      <div>
+        <section
+          class="card p-4 mb-4 d-flex flex-row justify-content-between align-items-center"
+        >
+          <h1 class="h3 mb-0" v-text="title"></h1>
+          <a href="/logout" class="btn btn-secondary">Log out</a>
+        </section>
+        <nav class="d-flex flex-wrap gap-2 mb-4">
+          <a href="/trekker" class="btn btn-outline-primary">Dashboard</a>
+          <a href="/trekker/treks" class="btn btn-outline-primary"
+            >Browse Treks</a
+          >
+          <a href="/trekker/bookings" class="btn btn-outline-primary"
+            >My Bookings</a
+          >
+          <a href="/trekker/profile" class="btn btn-outline-primary"
+            >Edit Profile</a
+          >
+        </nav>
+      </div>
+    </template>
+    {% block page_template %}{% endblock %}
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="/static/trekker_common.js"></script>
+    {% block app_script %}{% endblock %}
+  </body>
+</html>
