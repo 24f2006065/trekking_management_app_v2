@@ -48,22 +48,29 @@
           <h2 class="h5" v-text="trek.trek_name"></h2>
           <p class="mb-1">Location: <span v-text="trek.location"></span></p>
           <p class="mb-1">Difficulty: <span v-text="trek.difficulty"></span></p>
-          <p class="mb-1">
-            Duration: <span v-text="trek.duration_days"></span> days
+          <p class="mb-2">
+            Available slots: <span v-text="trek.available_slots"></span>
           </p>
-          <p class="mb-1">
-            Dates: <span v-text="trek.start_date"></span> to
-            <span v-text="trek.end_date"></span>
-          </p>
-          <p>Available slots: <span v-text="trek.available_slots"></span></p>
-          <button
-            class="btn btn-primary align-self-start"
-            :disabled="trek.available_slots <= 0"
-            @click="bookTrek(trek)"
-          >
-            <span v-if="trek.available_slots > 0">Book Trek</span
-            ><span v-else>Full</span>
-          </button>
+          <details>
+            <summary>View trek details and booking</summary>
+            <div class="pt-3">
+              <p class="mb-2">
+                Duration: <span v-text="trek.duration_days"></span> days
+              </p>
+              <p class="mb-3">
+                Dates: <span v-text="trek.start_date"></span> to
+                <span v-text="trek.end_date"></span>
+              </p>
+              <button
+                class="btn btn-primary"
+                :disabled="trek.available_slots <= 0"
+                @click="bookTrek(trek)"
+              >
+                <span v-if="trek.available_slots > 0">Book Trek</span
+                ><span v-else>Full</span>
+              </button>
+            </div>
+          </details>
         </div>
       </div>
       <div v-if="treks.length === 0" class="col-12">
